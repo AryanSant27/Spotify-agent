@@ -1,3 +1,4 @@
+
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -9,8 +10,13 @@ from flask import Flask, request, jsonify, session, redirect, url_for
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:3000"]) # Enable CORS for all routes and support credentials
-app.secret_key = 'your_super_secret_key_here' # Use a fixed key for development. CHANGE FOR PRODUCTION!
+# For deployment, you'll need to set the frontend URL in your Render environment variables
+# e.g., FRONTEND_URL=https://your-frontend-app.netlify.app
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+CORS(app, supports_credentials=True, origins=[FRONTEND_URL]) # Enable CORS for all routes and support credentials
+
+# For production, set this as an environment variable in Render
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'super_secret_dev_key') 
 
 DATABASE_FILE = 'spotify_data.db'
 
@@ -29,7 +35,8 @@ def init_db():
                 track_name TEXT NOT NULL,
                 album_name TEXT NOT NULL
             )
-        ''')
+        ''
+
         conn.commit()
 
 def get_spotify_oauth():
@@ -134,8 +141,8 @@ def callback():
     code = request.args.get('code')
     token_info = sp_oauth.get_access_token(code)
     session['token_info'] = token_info
-    # Redirect back to the frontend application
-    return redirect('http://localhost:3000/?loggedIn=true') 
+    # Redirect back to the frontend application using the FRONTEND_URL env var
+    return redirect(f'{FRONTEND_URL}/?loggedIn=true') 
 
 @app.route('/logout')
 def logout():
