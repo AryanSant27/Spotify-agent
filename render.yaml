@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: spotify-ai-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend_app.py
+    envVars:
+      - key: SPOTIPY_CLIENT_ID
+        sync: false
+      - key: SPOTIPY_CLIENT_SECRET
+        sync: false
+      - key: SPOTIPY_REDIRECT_URI
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
