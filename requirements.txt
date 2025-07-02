@@ -1,0 +1,6 @@
+spotipy
+google-generativeai
+python-dotenv
+pandas
+Flask
+flask_cors
