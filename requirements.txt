@@ -4,3 +4,4 @@ python-dotenv
 pandas
 Flask
 flask_cors
+streamlit 
