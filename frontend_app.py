@@ -1,25 +1,9 @@
 import streamlit as st
 import requests
 import webbrowser
-import os
-from urllib.parse import urlparse
 
-# Determine Backend URL dynamically
-if st.runtime.exists():
-    # Running on Streamlit Cloud
-    # Streamlit Cloud sets STREAMLIT_URL env var, which is the public URL of the app
-    if "STREAMLIT_URL" in os.environ:
-        parsed_url = urlparse(os.environ["STREAMLIT_URL"])
-        # The backend is running on the same host as the frontend, but on port 5000
-        BACKEND_URL = f"http://{parsed_url.hostname}:5000"
-    else:
-        # Fallback for local testing if STREAMLIT_URL is not set in a cloud-like environment
-        BACKEND_URL = "http://localhost:5000"
-else:
-    # Running locally
-    BACKEND_URL = "http://localhost:5000"
-
-st.write(f"DEBUG: Backend URL is {BACKEND_URL}") # Debugging line
+# Backend URL
+BACKEND_URL = "https://spotify-agent.streamlit.app"
 
 def query_backend(token, query):
     """Sends a natural language query to the backend and returns the result."""
@@ -46,7 +30,6 @@ def main():
         st.session_state.token = token
 
     if "token" not in st.session_state:
-        # Use the dynamically determined BACKEND_URL for login
         st.markdown(f"<a href=\"{BACKEND_URL}/login\" target=\"_self\">Login with Spotify</a>", unsafe_allow_html=True)
     else:
         st.success("Successfully logged in!")
