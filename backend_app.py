@@ -1,5 +1,3 @@
-
-
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -7,12 +5,23 @@ import pandas as pd
 from dotenv import load_dotenv
 import google.generativeai as genai
 import sqlite3
-from flask import Flask, request, jsonify, session, redirect, url_for, send_from_directory
+from flask import Flask, request, jsonify, session, redirect, url_for
 from flask_cors import CORS
+from urllib.parse import urlparse
 
 app = Flask(__name__)
-# The frontend is now a Streamlit app, which runs on port 8501 by default
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:8501')
+
+# Determine FRONTEND_URL and SPOTIPY_REDIRECT_URI dynamically
+if "STREAMLIT_URL" in os.environ:
+    # Running on Streamlit Cloud
+    parsed_url = urlparse(os.environ["STREAMLIT_URL"])
+    FRONTEND_URL = f"https://{parsed_url.hostname}" # Streamlit frontend public URL
+    SPOTIPY_REDIRECT_URI_VAL = f"https://{parsed_url.hostname}/callback" # Spotify redirects to frontend callback
+else:
+    # Running locally
+    FRONTEND_URL = 'http://localhost:8501'
+    SPOTIPY_REDIRECT_URI_VAL = 'http://localhost:8501/callback'
+
 CORS(app, supports_credentials=True, origins=[FRONTEND_URL]) # Enable CORS for all routes
 
 # For production, set this as an environment variable
@@ -43,8 +52,8 @@ def get_spotify_oauth():
     return SpotifyOAuth(
         client_id=os.getenv("SPOTIPY_CLIENT_ID"),
         client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
-        redirect_uri=os.getenv("SPOTIPY_REDIRECT_URI"),
-        scope="user-read-recently-played user-top-read", # Added user-top-read scope
+        redirect_uri=SPOTIPY_REDIRECT_URI_VAL, # Use the dynamically determined redirect URI
+        scope="user-read-recently-played user-top-read",
         cache_path=None
     )
 
@@ -236,10 +245,6 @@ def query_data():
                 return jsonify({"status": "error", "message": "Could not generate SQL query."}), 500
     except Exception as e:
         return jsonify({"status": "error", "message": f"Database error: {str(e)}"}), 500
-
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory('static', filename)
 
 if __name__ == '__main__':
     init_db()
