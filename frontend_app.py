@@ -3,7 +3,12 @@ import requests
 import webbrowser
 
 # Backend URL
-BACKEND_URL = "https://spotify-agent.streamlit.app"
+if "STREAMLIT_URL" in os.environ:
+    # Running on Streamlit Cloud, so use the public URL of the backend
+    BACKEND_URL = "https://spotify-agent.onrender.com"
+else:
+    # Running locally, so use the local address of the backend
+    BACKEND_URL = "http://127.0.0.1:5000"
 
 def query_backend(token, query):
     """Sends a natural language query to the backend and returns the result."""
@@ -29,8 +34,15 @@ def main():
     if token:
         st.session_state.token = token
 
-    if "token" not in st.session_state:
-        st.markdown(f"<a href=\"{BACKEND_URL}/login\" target=\"_self\">Login with Spotify</a>", unsafe_allow_html=True)
+    if 'token' not in st.session_state:
+        login_url = f"{BACKEND_URL}/login"
+        st.markdown(f'<a href="{login_url}" target="_self">Login with Spotify</a>', unsafe_allow_html=True)
+
+        # Check for token in URL, set it in session state, and trigger a rerun
+        query_params = st.query_params
+        if "token" in query_params:
+            st.session_state.token = query_params["token"]
+            st.rerun() # Use st.rerun to force a script rerun
     else:
         st.success("Successfully logged in!")
 
