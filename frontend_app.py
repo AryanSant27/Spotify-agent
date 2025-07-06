@@ -24,11 +24,10 @@ def main():
 
     # Get the access token from the URL query parameters
     query_params = st.query_params
-    
-    # If a token is found in the URL, save it to the session state and rerun the script
-    if "token" in query_params:
-        st.session_state.token = query_params["token"]
-        st.rerun()
+    token = query_params.get("token")
+
+    if token:
+        st.session_state.token = token
 
     if "token" not in st.session_state:
         st.markdown(f"<a href=\"{BACKEND_URL}/login\" target=\"_self\">Login with Spotify</a>", unsafe_allow_html=True)
